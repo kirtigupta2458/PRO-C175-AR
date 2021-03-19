@@ -1,4 +1,5 @@
 var modelList = [];
+var models = null;
 AFRAME.registerComponent("markerhandler", {
   init: async function() {
     this.el.addEventListener("markerFound", () => {
@@ -34,7 +35,7 @@ AFRAME.registerComponent("markerhandler", {
     }
     return false;
   },
-  tick: function() {
+  tick: async function() {
     if (modelList.length > 1) {
       var isBaseModelPresent = this.isModelPresentInArray(modelList, "base");
       var messageText = document.querySelector("#message-text");
@@ -42,18 +43,40 @@ AFRAME.registerComponent("markerhandler", {
       if (!isBaseModelPresent) {
         messageText.setAttribute("visible", true);
       } else {
+        if (models === null) {
+          models = await this.getModels();
+        }
+
         messageText.setAttribute("visible", false);
-        this.placeTheModel("road");
-        this.placeTheModel("car");
-        this.placeTheModel("building1");
-        this.placeTheModel("building2");
-        this.placeTheModel("building3");
-        this.placeTheModel("tree");
-        this.placeTheModel("sun");
+        this.placeTheModel("road", models);
+        this.placeTheModel("car", models);
+        this.placeTheModel("building1", models);
+        this.placeTheModel("building2", models);
+        this.placeTheModel("building3", models);
+        this.placeTheModel("tree", models);
+        this.placeTheModel("sun", models);
       }
     }
   },
-  placeTheModel: function(modelName) {
+  getModels: function() {
+    return fetch("js/models.json")
+      .then(res => res.json())
+      .then(data => data);
+  },
+  getModelGeometry: function(models, modelName) {
+    var barcodes = Object.keys(models);
+    for (var barcode of barcodes) {
+      if (models[barcode].model_name === modelName) {
+        return {
+          position: models[barcode]["placement_position"],
+          rotation: models[barcode]["placement_rotation"],
+          scale: models[barcode]["placement_scale"],
+          model_url: models[barcode]["model_url"]
+        };
+      }
+    }
+  },
+  placeTheModel: function(modelName, models) {
     var isListContainModel = this.isModelPresentInArray(modelList, modelName);
     if (isListContainModel) {
       var distance = null;
@@ -69,17 +92,13 @@ AFRAME.registerComponent("markerhandler", {
         // Checking Model placed or not in scene
         var isModelPlaced = document.querySelector(`#model-${modelName}`);
         if (isModelPlaced === null) {
-          var position = modelEl.getAttribute("position");
-          var rotation = modelEl.getAttribute("rotation");
-          var scale = modelEl.getAttribute("scale");
-          var modelUrl = modelEl.getAttribute("gltf-model");
-
           var el = document.createElement("a-entity");
+          var modelGeometry = this.getModelGeometry(models, modelName);
           el.setAttribute("id", `model-${modelName}`);
-          el.setAttribute("position", position);
-          el.setAttribute("gltf-model", `url(${modelUrl})`);
-          el.setAttribute("rotation", rotation);
-          el.setAttribute("scale", scale);
+          el.setAttribute("gltf-model", `url(${modelGeometry.model_url})`);
+          el.setAttribute("position", modelGeometry.position);
+          el.setAttribute("rotation", modelGeometry.rotation);
+          el.setAttribute("scale", modelGeometry.scale);
           marker1.appendChild(el);
         }
       }
