@@ -31,25 +31,19 @@ AFRAME.registerComponent("createmodels", {
     if (barcodeValue === 0) {
       var modelEl = document.createElement("a-entity");
       modelEl.setAttribute("id", `${modelName}`);
-      modelEl.setAttribute("geometry", {
-        primitive: "box",
-        width: model.width,
-        height: model.height
-      });
-      modelEl.setAttribute("position", model.position);
-      modelEl.setAttribute("rotation", model.rotation);
-      modelEl.setAttribute("material", {
-        color: model.color
-      });
-      marker.appendChild(modelEl);
+      
+      
+      
+      
+      
     } else {
       var modelEl = document.createElement("a-entity");
       modelEl.setAttribute("id", `${modelName}`);
-      modelEl.setAttribute("gltf-model", `url(${modelUrl})`);
-      modelEl.setAttribute("scale", model.scale);
-      modelEl.setAttribute("position", model.position);
-      modelEl.setAttribute("rotation", model.rotation);
-      marker.appendChild(modelEl);
+      
+      
+      
+      
+      
     }
   }
 });
